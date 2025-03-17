@@ -61,14 +61,10 @@ const languages: SupportLanguage[] = [
 ];
 
 function printHardline() {
-  // console.log(new Error().stack?.split('\n')[2]);
-
   return hardline;
 }
 
 function printTwoHardlines() {
-  // console.log(new Error().stack?.split('\n')[2]);
-
   return [hardline, hardline];
 }
 
@@ -117,8 +113,6 @@ function generateColumnSizes(text: string) {
     currentLine++;
   }
 
-  // console.log(columnSizes);
-
   textColumnWidth = columnSizes;
 }
 
@@ -131,44 +125,29 @@ const gherkinParser: Parser<GherkinNode> = {
   parse: (text: string, options: GherkinParseOptions): GherkinDocument => {
     const uuidFn = IdGenerator.uuid();
     const builder = new AstBuilder(uuidFn);
-    const matcher = new GherkinClassicTokenMatcher(); // or GherkinInMarkdownTokenMatcher()
+    const matcher = new GherkinClassicTokenMatcher();
 
     const parser = new GherkinParser(builder, matcher);
 
     const document = parser.parse(text);
-
+    console.log(JSON.stringify(document, null, 2));
+    console.log('text', text);
     generateColumnSizes(text);
 
-    // console.log({
-    //   textColumnWidth,
-    //   // document: JSON.stringify(document, null, 2),
-    // });
-
-    // console.log(
-    //   util.getStringWidth(text),
-    //   util.skipEverythingButNewLine(text, 18)
-    // );
-
-    return new TypedGherkinDocument(
+    const doc = new TypedGherkinDocument(
       {
         ...document,
-        // comments: [], // igonre comments for now
       },
       {
         escapeBackslashes:
           options.escapeBackslashes ?? DEFAULT_ESCAPE_BACKSLASH,
       }
     );
+    console.log(JSON.stringify(doc, null, 2));
+    return doc;
   },
 
   locStart: (node: TypedGherkinNode<GherkinNode>) => {
-    // return 0;
-    // if (!(node instanceof TypedComment)) {
-    //   throw new Error('locStart: not a comment');
-    // }
-
-    // console.log('locStart', node);
-
     assertNodeHasLocation(node);
 
     // sum all column size until the current line
@@ -178,34 +157,11 @@ const gherkinParser: Parser<GherkinNode> = {
     index += (node.location.column ?? 1) - 1;
 
     return index;
-
-    // if (node instanceof TypedComment) {
-    //   return 0;
-    // }
-
-    // if (node.location) {
-    //   return node.location.line * 1000000 + node.location.column;
-    // }
-
-    // return 0;
-    // return node.location.column ?? 0;
   },
   locEnd: (node: TypedGherkinNode<GherkinNode>) => {
-    // return 0; // TMP ignore comments
-
-    // if (!(node instanceof TypedComment)) {
-    //   throw new Error('locEnd: not a comment');
-    // }
-
-    // console.log('locEnd', node, '\n');
-
     if (node instanceof TypedComment) {
       return gherkinParser.locStart(node) + node.text.trim().length;
     }
-
-    // if (!(node instanceof TypedComment)) {
-    // console.log({ method: 'locEnd', nodeName: node.constructor.name });
-    // }
 
     if (node instanceof TypedFeature) {
       return (
@@ -216,18 +172,7 @@ const gherkinParser: Parser<GherkinNode> = {
       );
     }
 
-    // if (!(node instanceof TypedComment)) {
-    //   console.log(node, gherkinParser.locStart(node));
-    // }
-
-    // if (node.location) {
-    //   return node.location.line * 1000000 + node.location.column + 1;
-    // }
-
-    // console.log('locEnd', node);
-
     return gherkinParser.locStart(node) + 1;
-    // return (node.location.column ?? 0) + node.text.length;
   },
   astFormat: 'gherkin-ast',
 };
@@ -238,7 +183,7 @@ function printTags(
 ) {
   return [
     // @ts-expect-error TODO path should be recognized as an AstPath<GherkinNode & { tags: readonly TypedTag[] }>>
-    join(printHardline(), path.map(gherkinAstPrinter.print, 'tags')),
+    join(' ', path.map(gherkinAstPrinter.print, 'tags')),
     node.tags.length > 0 ? printHardline() : '',
   ];
 }
@@ -406,12 +351,6 @@ const gherkinAstPrinter: Printer<TypedGherkinNode<GherkinNode>> = {
     return false; // block comments are not supported by gherkin for now. See https://cucumber.io/docs/gherkin/reference/
   },
 
-  // getCommentChildNodes: (node) => {
-  //   console.log('getCommentChildNodes', node)
-
-  //   return []
-  // },
-
   handleComments: {
     ownLine: (
       commentNode: TypedComment,
@@ -499,11 +438,12 @@ const gherkinAstPrinter: Printer<TypedGherkinNode<GherkinNode>> = {
       const hasLanguageInSourceFile = !!options.originalText.match(
         new RegExp(LANGUAGE_PATTERN, 'm')
       );
-
+      console.log(node);
       return [
         node instanceof TypedFeature && hasLanguageInSourceFile
           ? ['# language: ' + node.language, printHardline()]
           : '',
+
         printTags(path, node),
         printNodeHeading(node),
 
@@ -553,7 +493,7 @@ const gherkinAstPrinter: Printer<TypedGherkinNode<GherkinNode>> = {
           : '',
       ];
     } else if (node instanceof TypedScenario) {
-      // console.log(node);
+      console.log('anjing', node);
       return [
         printTags(path, node),
         printNodeHeading(node),
