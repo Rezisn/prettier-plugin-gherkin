@@ -18,6 +18,7 @@
     "dist"
   ],
   "scripts": {
+    "prepare": "yarn build",
     "build": "node build/clean-dist.mjs && tsc",
     "lint": "tsc --noEmit",
     "example": "yarn build && prettier --plugin=dist/index.js tests/plugin/example.feature",
