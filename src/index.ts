@@ -130,8 +130,6 @@ const gherkinParser: Parser<GherkinNode> = {
     const parser = new GherkinParser(builder, matcher);
 
     const document = parser.parse(text);
-    console.log(JSON.stringify(document, null, 2));
-    console.log('text', text);
     generateColumnSizes(text);
 
     const doc = new TypedGherkinDocument(
@@ -143,7 +141,6 @@ const gherkinParser: Parser<GherkinNode> = {
           options.escapeBackslashes ?? DEFAULT_ESCAPE_BACKSLASH,
       }
     );
-    console.log(JSON.stringify(doc, null, 2));
     return doc;
   },
 
@@ -379,8 +376,6 @@ const gherkinAstPrinter: Printer<TypedGherkinNode<GherkinNode>> = {
         }
       }
 
-      // console.log({ ownLine: commentNode, ast });
-
       return false;
     },
     endOfLine: (
@@ -397,7 +392,6 @@ const gherkinAstPrinter: Printer<TypedGherkinNode<GherkinNode>> = {
 
         return true;
       }
-      // console.log({ ownLine: commentNode, ast });
 
       return false;
     },
@@ -438,7 +432,6 @@ const gherkinAstPrinter: Printer<TypedGherkinNode<GherkinNode>> = {
       const hasLanguageInSourceFile = !!options.originalText.match(
         new RegExp(LANGUAGE_PATTERN, 'm')
       );
-      console.log(node);
       return [
         node instanceof TypedFeature && hasLanguageInSourceFile
           ? ['# language: ' + node.language, printHardline()]
@@ -493,7 +486,6 @@ const gherkinAstPrinter: Printer<TypedGherkinNode<GherkinNode>> = {
           : '',
       ];
     } else if (node instanceof TypedScenario) {
-      console.log('anjing', node);
       return [
         printTags(path, node),
         printNodeHeading(node),
@@ -531,8 +523,6 @@ const gherkinAstPrinter: Printer<TypedGherkinNode<GherkinNode>> = {
           : '',
       ];
     } else if (node instanceof TypedDocString) {
-      // console.log({ node });
-
       // if the content contains the delimiter, the parser will unescape it, so we need to escape it again
       const escapeDelimiter = (content: string) => {
         return content.replace(
@@ -553,7 +543,6 @@ const gherkinAstPrinter: Printer<TypedGherkinNode<GherkinNode>> = {
         node.delimiter,
       ]);
     } else if (node instanceof TypedExamples) {
-      // console.log({ node, columnSizes: node.columnSizes });
 
       return [
         printTags(path, node),
